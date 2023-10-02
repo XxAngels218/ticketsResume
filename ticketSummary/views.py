@@ -1,16 +1,19 @@
+import os
+import json
+
 from django.http import JsonResponse
 from docxtpl import DocxTemplate
 from django.shortcuts import render
-import os
 from django.http import HttpResponse
-from ticketSummary.utils.api_consumer import *
-from ticketSummary.utils.data_cleaner import data_cleaner
-from ticketSummary.utils.summary import *
 from django.shortcuts import render
-import json
 
 
-prompt = " The text above is a python string which contains the records of a conversation to solve a technical support problem, make a summary of the above and separate it into problem and solution naming each one as Problem: and the other as Solution:, they are not ordered in sequence of what happened, max tokens 3000."
+from ticketSummary.services.api.api_consumer import get_access_token, get_zoho_departments, get_tickets_by_deparment
+from ticketSummary.services.data.data_cleaner import data_cleaner
+from ticketSummary.services.data.data_list import make_data_list
+from ticketSummary.services.summary import make_summary
+
+# todo make a refactor of this code
 
 
 def home(request):
@@ -19,26 +22,27 @@ def home(request):
 
 def show_text(request):
     if request.method == 'POST':
-        ticketId = request.POST.get('ticketId')
-        summary = make_summary(data_cleaner(make_data_list(ticketId)), prompt)
-        context = {'ticketId': ticketId, 'summary': summary}
+        ticket_id = request.POST.get('ticketId')
+        # summary = make_summary(data_cleaner(make_data_list(ticket_id)), prompt)
+        summary = make_summary()
+        context = {'ticketId': ticket_id, 'summary': summary}
         return render(request, 'ticketsummary/show_text.html', context)
     else:
         return render(request, 'ticketsummary/enter_text.html')
 
 
-def export_to_word(request, ticketId, problem, solution):
+def export_to_word(ticket_id, problem, solution):
     doc = DocxTemplate(
         "ticketSummary/templates/ticketsummary/summaryTmpl.docx")
     context = {
-        "ticketId": ticketId,
+        "ticketId": ticket_id,
         "problem": problem,
         "solution": solution,
     }
     doc.render(context)
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    response['Content-Disposition'] = f'attachment; filename="summary_{ticketId}.docx"'
+    response['Content-Disposition'] = f'attachment; filename="summary_{ticket_id}.docx"'
     doc.save(response)
     return response
 
@@ -55,5 +59,5 @@ def dropdown_view(request):
 
 def tickets_view(request):
     department_id = request.GET.get('id')
-    data = get_tickets_byDeparment(get_access_token(), department_id)
+    data = get_tickets_by_deparment(get_access_token(), department_id)
     return render(request, 'ticketsummary/list_tickets.html', {'data': data['data']})
