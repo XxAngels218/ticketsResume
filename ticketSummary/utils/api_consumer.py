@@ -5,9 +5,9 @@ import requests
 
 @dataclass
 class Credentials:
-    REFRESH_TOKEN: str = '1000.4b9efeaf45c6f8e72e7f3ad37298f538.01223c250d20846126ef20f29b1cfb52'
-    CLIENT_ID: str = '1000.BTPKXDNMS6ECRX6OGBSVPSBSWFJPWO'
-    CLIENT_SECRET: str = '6c3ecd8cbb1647ce6b8ce84391de40e8b50d27e61a'
+    REFRESH_TOKEN: str = '""""""'
+    CLIENT_ID: str = '""""""'
+    CLIENT_SECRET: str = '""""""'
     GRANT_TYPE: str = 'refresh_token'
 
 
